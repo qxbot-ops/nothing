@@ -171,6 +171,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--tex
 .message.out .voice-msg .progress-fill{background:rgba(255,255,255,.5)}
 .message.out .voice-msg .waveform{background:rgba(0,0,0,.15)}
 </style>
+<!-- OneSignal SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.init({
+      appId: "80a355a4-f29d-46d0-9b9e-82d86f27d508",
+      allowLocalhostAsSecureOrigin: true,
+    });
+  });
+</script>
 </head>
 <body>
 
@@ -562,6 +573,13 @@ function initApp() {
   document.getElementById('app').classList.add('active');
   document.getElementById('userName').textContent = currentUser;
   document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+
+  // 👇 YE 4 LINES ADD KAR
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.login(currentUser);
+    OneSignal.Notifications.requestPermission();
+  });
+
   loadContacts();
   loadUsers();
   loadAllChats();
@@ -1044,7 +1062,27 @@ function sendVoiceMessage(duration) {
   };
   reader.readAsDataURL(audioBlob);
 }
+async function sendCallNotification(calleeUserId, callerName) {
+  const ONESIGNAL_APP_ID = "80a355a4-f29d-46d0-9b9e-82d86f27d508";
+  const REST_API_KEY = "os_v2_app_qcrvljhstvdnbg46qlmg6j6vbd6ujfylvt3ec24i2ze6evphcsh3wivo5jxrpwdko3r4fo5qig3q6r2wwrugr2yeebipnzj666fk3jq";
 
+  await fetch("https://onesignal.com/api/v1/notifications", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Basic " + REST_API_KEY
+    },
+    body: JSON.stringify({
+      app_id: ONESIGNAL_APP_ID,
+      include_external_user_ids: [calleeUserId],
+      headings: { en: "Incoming Call" },
+      contents: { en: callerName + " is calling you..." },
+      android_channel_id: "a7c6d7de-267d-4229-befa-69ff07f51d09",
+      priority: 10,
+      data: { type: "call", callerId: currentUser }
+    })
+  });
+}
 window.startCall = async function() {
   if (!activeChat) return showToast('Select a chat first');
 
@@ -1077,6 +1115,7 @@ window.startCall = async function() {
       status: 'calling',
       time: serverTimestamp()
     });
+sendCallNotification(activeChat, currentUser);
 
     document.getElementById('callModal').classList.add('active');
     document.getElementById('callName').textContent = activeChat;
