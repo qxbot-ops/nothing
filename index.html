@@ -356,7 +356,22 @@ window.onload = () => {
   initEmojiPicker();
   setupInputToggle();
 };
+async function requestMicPermission() {
+    // Check if mic already granted
+    if (micPermissionGranted) return;
 
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stream milte hi tracks stop karna zaroori hai warna mic icon status bar mein dikhta rahega
+        stream.getTracks().forEach(track => track.stop()); 
+        micPermissionGranted = true;
+        console.log("Mic Permission Granted successfully");
+    } catch (err) {
+        console.warn("Mic Permission Denied:", err);
+        // Agar user ne mana kar diya toh dobara koshish karne ka alert
+        showToast("Please enable microphone for voice calls and messages.");
+    }
+}
 function setupInputToggle() {
   const msgInput = document.getElementById('msgInput');
   const micBtn = document.getElementById('micBtn');
@@ -480,6 +495,7 @@ window.login = async function() {
   await initPeer();
   setupPresence();
   initApp();
+  requestMicPermission();
 }
 
 async function initPeer() {
