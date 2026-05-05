@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ChatZooo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg-primary:#0b141a;--bg-secondary:#1f2c33;--bg-chat:#0a1014;--bg-hover:#2a3942;--bg-green:#00a884;--bg-green-dark:#005c4b;--bg-msg-out:#005c4b;--bg-msg-in:#1f2c33;--text-primary:#e9edef;--text-secondary:#8696a0;--border:#2a3942;--red:#f15c6d}
+body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);height:100vh;height:100dvh;overflow:hidden;overscroll-behavior:none}
+.login-screen{position:fixed;inset:0;background:var(--bg-primary);display:flex;align-items:center;justify-content:center;z-index:1000;transition:opacity.3s;padding:20px}
+.login-screen.hidden{opacity:0;pointer-events:none}
+.login-box{background:var(--bg-secondary);padding:32px 24px;border-radius:16px;width:100%;max-width:400px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.login-box h1{font-size:28px;margin-bottom:8px;color:var(--bg-green);font-weight:600}
+.login-box p{color:var(--text-secondary);margin-bottom:24px;font-size:14px}
+.login-box input{width:100%;padding:14px 16px;background:var(--bg-primary);border:2px solid var(--border);border-radius:12px;color:var(--text-primary);font-size:16px;outline:none;transition:all.2s;margin-bottom:12px}
+.login-box input:focus{border-color:var(--bg-green);box-shadow:0 0 0 3px rgba(0,168,132,.1)}
+.login-box button{width:100%;margin-top:4px;padding:14px;background:var(--bg-green);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all.2s}
+.login-box button:active{background:#06cf9c;transform:scale(.98)}
+.app{display:flex;height:100vh;height:100dvh;opacity:0;pointer-events:none}
+.app.active{opacity:1;pointer-events:all}
+.sidebar{width:400px;background:var(--bg-primary);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform.3s ease;flex-shrink:0}
+.sidebar-header{padding:10px 16px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:space-between;height:60px;flex-shrink:0}
+.user-info{display:flex;align-items:center;gap:12px;min-width:0}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--bg-green),#06cf9c);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0}
+#userName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.sidebar-actions i{font-size:20px;color:var(--text-secondary);cursor:pointer;padding:8px;border-radius:50%;transition:background.2s}
+.sidebar-actions i:active{background:var(--bg-hover)}
+.search-box{padding:8px 12px;background:var(--bg-primary);flex-shrink:0}
+.search-wrapper{background:var(--bg-secondary);border-radius:12px;display:flex;align-items:center;padding:10px 14px;gap:10px}
+.search-wrapper i{color:var(--text-secondary);font-size:18px}
+.search-wrapper input{flex:1;background:none;border:none;outline:none;color:var(--text-primary);font-size:15px}
+.add-user-btn{padding:12px;margin:8px 12px;background:var(--bg-green-dark);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all.2s;flex-shrink:0}
+.add-user-btn:active{background:var(--bg-green);transform:scale(.98)}
+.chats-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.chat-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background.2s;border-bottom:1px solid var(--border)}
+.chat-item:active{background:var(--bg-hover)}
+.chat-item.active{background:var(--bg-hover)}
+.chat-info{flex:1;min-width:0}
+.chat-info h3{font-size:16px;font-weight:500;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.chat-info p{font-size:13px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-time{font-size:12px;color:var(--text-secondary);flex-shrink:0}
+.chat-window{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg-chat);
+  background-image:url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%230a1014'/%3E%3Cpath d='M50 0l50 50-50 50L0 50z' fill='%230b141a' opacity='0.3'/%3E%3C/svg%3E");
+  min-width:0;
+  min-height:0;
+  overflow:hidden; /* YE ADD KARO */
+}
+.empty-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-secondary);padding:20px;text-align:center}
+.empty-chat i{font-size:70px;margin-bottom:20px;opacity:.3}
+.chat-header{padding:10px 16px;background:var(--bg-secondary);display:flex;align-items:center;gap:12px;height:60px;border-left:1px solid var(--border);flex-shrink:0}
+.back-btn{display:none;font-size:24px;color:var(--text-secondary);cursor:pointer;padding:4px}
+.chat-header-actions{margin-left:auto;display:flex;gap:4px}
+.chat-header-actions i{font-size:22px;color:var(--text-secondary);cursor:pointer;padding:8px;border-radius:50%;transition:all.2s}
+.chat-header-actions i:active{background:var(--bg-hover)}
+.chat-header-actions i.calling{color:var(--bg-green);animation:pulse 1.5s infinite}
+.chat-header-actions i:disabled{opacity:.3;pointer-events:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.messages{
+  flex:1;
+  overflow-y:auto;  /* scroll ki jagah auto */
+  overflow-x:hidden;
+  padding:20px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:var(--bg-hover) transparent;
+  min-height:0; /* IMP: flex child ko scroll karne ke liye zaroori */
+}
+
+.message{max-width:75%;padding:10px 14px;border-radius:12px;word-wrap:break-word;animation:msgIn.2s ease;font-size:15px;line-height:1.4}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.message.out{align-self:flex-end;background:var(--bg-msg-out);border-top-right-radius:4px}
+.message.in{align-self:flex-start;background:var(--bg-msg-in);border-top-left-radius:4px}
+.message.call-log{align-self:center;background:var(--bg-secondary);color:var(--text-secondary);font-size:13px;padding:6px 14px;border-radius:8px;max-width:90%;text-align:center}
+.message.call-log i{margin-right:6px}
+.msg-time{font-size:11px;color:var(--text-secondary);margin-top:4px;text-align:right;opacity:.8}
+.voice-msg{position:relative;display:flex;align-items:center;gap:8px;width:220px}
+.voice-msg button{background:none;border:none;color:var(--text-primary);font-size:24px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:2}
+.voice-msg .progress-wrap{flex:1;position:relative;height:28px;display:flex;align-items:center;cursor:pointer}
+.voice-msg .waveform{flex:1;height:24px;position:relative;overflow:hidden;display:flex;align-items:center;gap:2px}
+.voice-msg .wave-bar{flex:1;height:100%;background:rgba(255,255,.15);border-radius:2px;transition:background 0.1s ease}
+.voice-msg .wave-bar.filled{background:rgba(255,255,.6)}
+.voice-msg .time-display{font-size:11px;color:var(--text-secondary);min-width:32px;text-align:right;flex-shrink:0}
+.voice-msg .avatar-mini{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--bg-green),#06cf9c);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-left:4px;color:#fff}
+.message.in .voice-msg .wave-bar{background:rgba(0,168,132,.2)}
+.message.in .voice-msg .wave-bar.filled{background:var(--bg-green)}
+.message.out .voice-msg .wave-bar{background:rgba(0,0,0,.15)}
+.message.out .voice-msg .wave-bar.filled{background:rgba(255,255,.6)}
+.message.out .voice-msg .waveform{background:rgba(0,0,0,.15)}
+.chat-input-area{padding:10px 12px;background:var(--bg-secondary);display:flex;align-items:flex-end;gap:8px;flex-shrink:0;position:relative}
+.chat-input-area i{font-size:24px;color:var(--text-secondary);cursor:pointer;padding:8px;flex-shrink:0;border-radius:50%;transition:background.2s}
+.chat-input-area i:active{background:var(--bg-hover)}
+.input-wrapper{flex:1;background:var(--bg-hover);border-radius:24px;display:flex;align-items:center;padding:10px 16px;min-height:48px}
+.input-wrapper input{flex:1;background:none;border:none;outline:none;color:var(--text-primary);font-size:16px}
+.send-btn{background:var(--bg-green);width:48px;height:48px;border-radius:50%;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform.1s}
+.send-btn:active{transform:scale(.9)}
+.send-btn.recording{background:var(--red);animation:pulse 1s infinite}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:2000;padding:20px}
+.modal.active{display:flex}
+.modal-box{background:var(--bg-secondary);padding:28px;border-radius:16px;width:100%;max-width:400px}
+.modal-box h2{margin-bottom:16px;font-size:20px;font-weight:600}
+.modal-box input{width:100%;padding:14px;background:var(--bg-primary);border:2px solid var(--border);border-radius:12px;color:var(--text-primary);margin-bottom:16px;font-size:16px;outline:none}
+.modal-box input:focus{border-color:var(--bg-green)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.modal-actions button{padding:12px 24px;border:none;border-radius:12px;cursor:pointer;font-weight:500;font-size:15px;transition:transform.1s}
+.modal-actions button:active{transform:scale(.95)}
+.btn-cancel{background:var(--bg-hover);color:var(--text-primary)}
+.btn-add{background:var(--bg-green);color:#fff}
+.call-modal{position:fixed;inset:0;background:linear-gradient(135deg,#0b141a 0%,#1f2c33 100%);display:none;align-items:center;justify-content:center;z-index:3000;padding:20px}
+.call-modal.active{display:flex}
+.call-box{text-align:center}
+.call-avatar{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--bg-green),#06cf9c);display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:600;margin:0 auto 24px;animation:callPulse 2s infinite}
+@keyframes callPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,168,132,.7)}50%{box-shadow:0 0 0 30px rgba(0,168,132,0)}}
+.call-box h2{font-size:28px;margin-bottom:8px;font-weight:600}
+.call-box p{color:var(--text-secondary);margin-bottom:48px;font-size:16px}
+.call-actions{display:flex;gap:24px;justify-content:center}
+.call-btn{width:72px;height:72px;border-radius:50%;border:none;color:#fff;font-size:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform.1s}
+.call-btn.accept{background:var(--bg-green)}
+.call-btn.reject{background:var(--red)}
+.call-btn:active{transform:scale(.9)}
+.emoji-picker{position:absolute;bottom:70px;left:12px;z-index:100;display:none}
+.emoji-picker.active{display:block}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:var(--bg-hover);border-radius:3px}
+@media (max-width:768px){
+.sidebar{position:fixed;inset:0;width:100%;z-index:100;transform:translateX(0)}
+.sidebar.hidden{transform:translateX(-100%)}
+.chat-window{position:fixed;inset:0;z-index:50}
+.back-btn{display:block}
+.messages{padding:16px 12px}
+.message{max-width:85%}
+.chat-header{border-left:none}
+.empty-chat{display:none}
+.call-avatar{width:120px;height:120px;font-size:48px}
+}
+.status-dot{width:9px;height:9px;background:#53bdeb;border-radius:50%;display:inline-block;box-shadow:0 0 8px #53bdeb}
+.status-offline{width:9px;height:9px;background:#8696a0;border-radius:50%;display:inline-block}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg-secondary);padding:12px 24px;border-radius:12px;color:var(--text-primary);z-index:4000;animation:toastIn.3s ease;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+.emoji-picker{position:absolute;bottom:70px;left:12px;z-index:100;display:none;width:350px;max-width:90vw;background:var(--bg-secondary);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden}
+.emoji-picker.active{display:block}
+.emoji-tabs{display:flex;border-bottom:1px solid var(--border)}
+.emoji-tab{flex:1;padding:12px;background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer;transition:all.2s}
+.emoji-tab.active{color:var(--bg-green);border-bottom:2px solid var(--bg-green)}
+#gifSearch{width:100%;padding:8px;background:var(--bg-primary);border:none;color:var(--text-primary);border-radius:8px;margin-bottom:8px}
+#gifGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-height:300px;overflow-y:auto;padding:8px}
+#gifGrid img{width:100%;border-radius:8px;cursor:pointer}
+#recordingUI{display:none;flex:1;align-items:center;gap:12px}
+#recordingUI i{color:var(--red);animation:pulse 1s infinite}
+#recordTime{font-size:15px}
+@media (max-width:768px){
+.emoji-picker{width:calc(100vw - 24px);left:12px}
+.voice-msg{position:relative;display:flex;align-items:center;gap:8px;width:220px}
+.voice-msg button{background:none;border:none;color:var(--text-primary);font-size:24px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.voice-msg .progress-wrap{flex:1;position:relative;height:24px;display:flex;align-items:center}
+.voice-msg .waveform{flex:1;height:24px;background:rgba(255,255,.15);border-radius:12px;position:relative;overflow:hidden}
+.voice-msg .waveform::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)}
+.voice-msg .progress-fill{position:absolute;left:0;top:0;height:100%;background:rgba(255,255,255,.4);border-radius:12px;width:0%;pointer-events:none}
+.voice-msg .time-display{font-size:11px;color:var(--text-secondary);min-width:32px;text-align:right;flex-shrink:0}
+.voice-msg .avatar-mini{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--bg-green),#06cf9c);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-left:4px}
+.message.out .voice-msg .progress-fill{background:rgba(255,255,255,.5)}
+.message.out .voice-msg .waveform{background:rgba(0,0,0,.15)}
+</style>
+<!-- OneSignal SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.init({
+      appId: "80a355a4-f29d-46d0-9b9e-82d86f27d508",
+      allowLocalhostAsSecureOrigin: true,
+    });
+  });
+</script>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+    <div class="login-box">
+        <h1><i class="ri-chat-3-fill"></i>ChatZooo</h1>
+        <p>Private & Secure</p>
+        <input type="text" id="nameInput" placeholder="Username..." maxlength="20">
+        <input type="password" id="passInput" placeholder="Password..." maxlength="20">
+        <button onclick="login()"><i class="ri-login-box-line"></i> Login / Register</button>
+    </div>
+</div>
+
+<div class="app" id="app">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">U</div>
+                <span id="userName">User</span>
+            </div>
+            <div class="sidebar-actions">
+                <i class="ri-logout-box-line" onclick="logout()"></i>
+            </div>
+        </div>
+        <div class="search-box">
+            <div class="search-wrapper">
+                <i class="ri-search-line"></i>
+                <input type="text" placeholder="Search contacts" id="searchInput">
+            </div>
+        </div>
+        <button class="add-user-btn" onclick="openAddUserModal()">
+            <i class="ri-user-add-line"></i> Add Contact
+        </button>
+        <div class="chats-list" id="chatsList"></div>
+    </div>
+
+    <div class="chat-window">
+        <div class="empty-chat" id="emptyChat">
+            <i class="ri-chat-3-line"></i>
+            <h2>ChatZooo</h2>
+            <p>Add a contact to start messaging</p>
+        </div>
+        
+<div id="activeChat" style="display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden">
+
+            <div class="chat-header">
+                <i class="ri-arrow-left-line back-btn" onclick="closeChatMobile()"></i>
+                <div class="avatar" id="chatAvatar">U</div>
+                <div style="min-width:0;flex:1">
+                    <h3 id="chatName">User</h3>
+                    <p style="font-size:13px;color:var(--text-secondary)" id="chatStatus">offline</p>
+                </div>
+                <div class="chat-header-actions">
+                    <i class="ri-phone-fill" id="callBtn" onclick="startCall()"></i>
+                </div>
+            </div>
+            <div class="messages" id="messages"></div>
+ <div class="chat-input-area">
+    <i class="ri-emotion-happy-line" onclick="toggleEmojiPicker()"></i>
+    <div class="emoji-picker" id="emojiPicker">
+        <div class="emoji-tabs">
+            <button class="emoji-tab active" onclick="switchEmojiTab('emoji')">😊</button>
+            <button class="emoji-tab" onclick="switchEmojiTab('gif')">GIF</button>
+            <button class="emoji-tab" onclick="switchEmojiTab('sticker')">⭐</button>
+        </div>
+        <div id="emojiContent"></div>
+        <div id="gifContent" style="display:none">
+            <input type="text" id="gifSearch" placeholder="Search GIFs..." style="width:100%;padding:8px;background:var(--bg-primary);border:none;color:var(--text-primary);border-radius:8px;margin-bottom:8px">
+            <div id="gifGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-height:300px;overflow-y:auto;padding:8px"></div>
+        </div>
+        <div id="stickerContent" style="display:none;padding:12px;text-align:center;color:var(--text-secondary)">Coming Soon 🔥</div>
+    </div>
+    <div class="input-wrapper" id="inputWrapper">
+        <input type="text" id="msgInput" placeholder="Type a message" onkeypress="handleKeyPress(event)">
+        <div id="recordingUI" style="display:none;flex:1;align-items:center;gap:12px">
+            <i class="ri-mic-fill" style="color:var(--red);animation:pulse 1s infinite"></i>
+            <span id="recordTime" style="font-size:15px">0:00</span>
+            <span style="flex:1;text-align:center;color:var(--text-secondary);font-size:13px"><i class="ri-arrow-left-line"></i> Slide to cancel</span>
+        </div>
+    </div>
+    <button class="send-btn" id="micBtn" onmousedown="startRecording(event)" onmouseup="stopRecording()" ontouchstart="startRecording(event)" ontouchend="stopRecording()">
+        <i class="ri-mic-fill" id="micIcon"></i>
+    </button>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()" style="display:none">
+        <i class="ri-send-plane-fill"></i>
+    </button>
+</div>
+ </div>
+</div>
+
+<div class="modal" id="addUserModal">
+    <div class="modal-box">
+        <h2>Add New Contact</h2>
+        <input type="text" id="newUserName" placeholder="Enter exact username..." maxlength="20">
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeAddUserModal()">Cancel</button>
+            <button class="btn-add" onclick="addUser()">Add Contact</button>
+        </div>
+    </div>
+</div>
+
+<div class="call-modal" id="callModal">
+    <div class="call-box">
+        <div class="call-avatar" id="callAvatar">U</div>
+        <h2 id="callName">User</h2>
+        <p id="callStatus">Calling...</p>
+        <div class="call-actions">
+            <button class="call-btn reject" onclick="endCall()">
+                <i class="ri-close-line"></i>
+            </button>
+            <button class="call-btn accept" id="acceptBtn" style="display:none" onclick="acceptCall()">
+                <i class="ri-phone-fill"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<audio id="remoteAudio" autoplay></audio>
+<audio id="ringtone" loop src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, serverTimestamp, onDisconnect, remove, get, update } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDaf9dAdFadmaHDfG-JXoYRvG90xM-ERVg",
+  authDomain: "blackchat-c676c.firebaseapp.com",
+  databaseURL: "https://blackchat-c676c-default-rtdb.firebaseio.com",
+  projectId: "blackchat-c676c",
+  storageBucket: "blackchat-c676c.firebasestorage.app",
+  messagingSenderId: "653825711440",
+  appId: "1:653825711440:web:955800452cc4505b572055",
+  measurementId: "G-7J9D9ZN306"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let currentUser = null;
+let activeChat = null;
+let users = {};
+let contacts = {};
+let allChats = {};
+let peer = null;
+let currentCall = null;
+let localStream = null;
+let picker = null;
+let listeners = {};
+let isOnline = false;
+let connectedRef = ref(db, '.info/connected');
+let callTimer = null;
+let callSeconds = 0;
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let recordStartTime = 0;
+let recordTimer = null;
+let currentAudio = null;
+let micPermissionGranted = false;
+
+window.onload = () => {
+  const savedUser = localStorage.getItem('blackchat_user');
+  const savedPass = localStorage.getItem('blackchat_pass');
+  if (savedUser && savedPass) {
+    document.getElementById('nameInput').value = savedUser;
+    document.getElementById('passInput').value = savedPass;
+    login();
+  }
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  initEmojiPicker();
+  setupInputToggle();
+};
+
+function setupInputToggle() {
+  const msgInput = document.getElementById('msgInput');
+  const micBtn = document.getElementById('micBtn');
+  const sendBtn = document.getElementById('sendBtn');
+  if (!msgInput ||!micBtn ||!sendBtn) return;
+  msgInput.addEventListener('input', () => {
+    if (msgInput.value.trim()) {
+      micBtn.style.display = 'none';
+      sendBtn.style.display = 'flex';
+    } else {
+      micBtn.style.display = 'flex';
+      sendBtn.style.display = 'none';
+    }
+  });
+}
+
+function initEmojiPicker() {
+  const emojiContent = document.getElementById('emojiContent');
+  if (!emojiContent || typeof EmojiMart === 'undefined') return;
+  picker = new EmojiMart.Picker({
+    onEmojiSelect: (emoji) => {
+      const input = document.getElementById('msgInput');
+      if (input) {
+        input.value += emoji.native;
+        input.dispatchEvent(new Event('input'));
+      }
+    },
+    theme: 'dark',
+    previewPosition: 'none',
+    skinTonePosition: 'none',
+    perLine: 8
+  });
+  emojiContent.appendChild(picker);
+  loadGifs('trending');
+}
+
+window.switchEmojiTab = function(tab) {
+  document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('emojiContent').style.display = tab === 'emoji'? 'block' : 'none';
+  document.getElementById('gifContent').style.display = tab === 'gif'? 'block' : 'none';
+  document.getElementById('stickerContent').style.display = tab === 'sticker'? 'block' : 'none';
+}
+
+async function loadGifs(query) {
+  const grid = document.getElementById('gifGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-secondary)">Loading...</div>';
+  try {
+    const res = await fetch(`https://tenor.googleapis.com/v2/search?q=${query}&key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&limit=20`);
+    const data = await res.json();
+    grid.innerHTML = '';
+    data.results.forEach(gif => {
+      const img = document.createElement('img');
+      img.src = gif.media_formats.tinygif.url;
+      img.style.width = '100%';
+      img.style.borderRadius = '8px';
+      img.style.cursor = 'pointer';
+      img.onclick = () => sendGif(gif.media_formats.gif.url);
+      grid.appendChild(img);
+    });
+  } catch (err) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-secondary)">Failed to load</div>';
+  }
+}
+
+document.getElementById('gifSearch')?.addEventListener('input', (e) => {
+  const q = e.target.value.trim();
+  if (q.length > 2) loadGifs(q);
+});
+
+function sendGif(url) {
+  if (!activeChat) return;
+  const chatId = [currentUser, activeChat].sort().join('_');
+  push(ref(db, `chats/${chatId}`), {
+    sender: currentUser,
+    type: 'gif',
+    url: url,
+    time: serverTimestamp()
+  });
+  toggleEmojiPicker();
+}
+
+window.toggleEmojiPicker = function() {
+  document.getElementById('emojiPicker').classList.toggle('active');
+}
+
+window.login = async function() {
+  const name = document.getElementById('nameInput').value.trim();
+  const pass = document.getElementById('passInput').value.trim();
+  if (!name) return showToast('Please enter username');
+  if (name.length < 3) return showToast('Username must be at least 3 characters');
+  if (!pass) return showToast('Please enter password');
+  if (pass.length < 4) return showToast('Password must be at least 4 characters');
+
+  if (location.protocol!== 'https:' && location.hostname!== 'localhost' && location.hostname!== '127.0.0.1') {
+    return showToast('HTTPS required. Deploy first.');
+  }
+
+  showToast('Logging in...');
+
+  const userSnap = await get(ref(db, `users/${name}`));
+  if (userSnap.exists()) {
+    const userData = userSnap.val();
+    if (userData.password!== pass) {
+      return showToast('Wrong password!');
+    }
+  } else {
+    await set(ref(db, `users/${name}`), {
+      name: name,
+      password: pass,
+      online: true,
+      lastSeen: serverTimestamp()
+    });
+  }
+
+  currentUser = name;
+  localStorage.setItem('blackchat_user', name);
+  localStorage.setItem('blackchat_pass', pass);
+
+  await initPeer();
+  setupPresence();
+  initApp();
+}
+
+async function initPeer() {
+  return new Promise((resolve) => {
+    if (peer) peer.destroy();
+
+    const peerId = currentUser.replace(/[^a-zA-Z0-9]/g, '') + '_' + Date.now();
+    peer = new Peer(peerId, {
+      host: '0.peerjs.com',
+      port: 443,
+      path: '/',
+      secure: true,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+        ],
+        iceCandidatePoolSize: 10
+      },
+      debug: 0
+    });
+
+    peer.on('open', (id) => {
+      update(ref(db, `users/${currentUser}`), {
+        peerId: id,
+        online: true,
+        lastSeen: serverTimestamp()
+      });
+      resolve();
+    });
+
+    peer.on('disconnected', () => peer.reconnect());
+    peer.on('error', (err) => {
+      console.error('Peer error:', err);
+      if (err.type === 'peer-unavailable') showToast('User not available');
+    });
+
+    // FIX: NO AUTO ANSWER - Sirf store karo
+    peer.on('call', (call) => {
+      if (currentCall) {
+        call.close();
+        return;
+      }
+      currentCall = call;
+      // Answer nahi kar rahe yahan - acceptCall me hoga
+    });
+  });
+}
+
+function setupPresence() {
+  onValue(connectedRef, (snap) => {
+    if (snap.val() === true) {
+      isOnline = true;
+      update(ref(db, `users/${currentUser}`), {
+        online: true,
+        lastSeen: serverTimestamp()
+      });
+      onDisconnect(ref(db, `users/${currentUser}/online`)).set(false);
+      onDisconnect(ref(db, `users/${currentUser}/lastSeen`)).set(serverTimestamp());
+    } else {
+      isOnline = false;
+    }
+  });
+
+  setInterval(() => {
+    if (currentUser && isOnline) {
+      update(ref(db, `users/${currentUser}`), {
+        lastSeen: serverTimestamp(),
+        online: true
+      });
+    }
+  }, 30000);
+}
+
+window.logout = function() {
+  if (confirm('Logout?')) {
+    update(ref(db, `users/${currentUser}`), { online: false });
+    if (peer) peer.destroy();
+    if (localStream) localStream.getTracks().forEach(t => t.stop());
+    localStorage.removeItem('blackchat_user');
+    localStorage.removeItem('blackchat_pass');
+    location.reload();
+  }
+}
+
+function initApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.add('active');
+  document.getElementById('userName').textContent = currentUser;
+  document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+
+  // 👇 YE 4 LINES ADD KAR
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.login(currentUser);
+    OneSignal.Notifications.requestPermission();
+  });
+
+  loadContacts();
+  loadUsers();
+  loadAllChats();
+  listenForCalls();
+}
+
+function loadUsers() {
+  if (listeners.users) listeners.users();
+  listeners.users = onValue(ref(db, 'users'), (snapshot) => {
+    users = snapshot.val() || {};
+    renderChats();
+    if (activeChat) updateChatStatus(activeChat);
+  });
+}
+
+function loadContacts() {
+  if (listeners.contacts) listeners.contacts();
+  listeners.contacts = onValue(ref(db, `contacts/${currentUser}`), (snapshot) => {
+    contacts = snapshot.val() || {};
+    renderChats();
+  });
+}
+
+function loadAllChats() {
+  if (listeners.allChats) listeners.allChats();
+  listeners.allChats = onValue(ref(db, 'chats'), (snapshot) => {
+    const allChatsData = snapshot.val() || {};
+    allChats = {};
+    Object.keys(allChatsData).forEach(chatId => {
+      if (chatId.includes(currentUser)) {
+        const otherUser = chatId.split('_').find(u => u!== currentUser);
+        if (otherUser && users[otherUser]) {
+          allChats[otherUser] = true;
+        }
+      }
+    });
+    renderChats();
+  });
+}
+
+function listenForCalls() {
+  if (listeners.calls) listeners.calls();
+  listeners.calls = onValue(ref(db, `calls/${currentUser}`), (snapshot) => {
+    const callData = snapshot.val();
+    if (callData && callData.status === 'calling' &&!document.getElementById('callModal').classList.contains('active')) {
+      showIncomingCall(callData.from);
+    } else if (!callData && document.getElementById('callModal').classList.contains('active')) {
+      endCallUI();
+    }
+  });
+}
+
+window.openAddUserModal = function() {
+  const modal = document.getElementById('addUserModal');
+  const input = document.getElementById('newUserName');
+  if (!modal || !input) {
+    console.error('Modal elements not found');
+    return showToast('UI Error. Please refresh.');
+  }
+  modal.classList.add('active');
+  input.focus();
+}
+window.closeAddUserModal = function() {
+  document.getElementById('addUserModal').classList.remove('active');
+  document.getElementById('newUserName').value = '';
+}
+
+window.addUser = async function() {
+  const name = document.getElementById('newUserName').value.trim();
+  if (!name) return showToast('Enter a username');
+  if (name === currentUser) return showToast('You cannot add yourself');
+
+  showToast('Searching user...');
+  try {
+    const userSnap = await get(ref(db, `users/${name}`));
+    if (!userSnap.exists()) {
+      return showToast('User not found. Ask them to refresh and login.');
+    }
+    await set(ref(db, `contacts/${currentUser}/${name}`), true);
+    showToast(`Added ${name} to contacts`);
+    closeAddUserModal();
+    openChat(name);
+  } catch (err) {
+    showToast('Error adding user');
+    console.error(err);
+  }
+}
+
+function renderChats() {
+  const chatsList = document.getElementById('chatsList');
+  chatsList.innerHTML = '';
+
+  const allUsers = {...contacts,...allChats};
+  const chatUsers = Object.keys(allUsers).filter(u => users[u]);
+
+  if (chatUsers.length === 0) {
+    chatsList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:40px 20px">No chats yet.<br>Search and message anyone!</div>';
+    return;
+  }
+
+  chatUsers.forEach(username => {
+    const chatItem = document.createElement('div');
+    chatItem.className = 'chat-item';
+    if (activeChat === username) chatItem.classList.add('active');
+
+    const isOnline = users[username]?.online;
+    const statusIcon = isOnline? '<span class="status-dot"></span>' : '<span class="status-offline"></span>';
+    const notInContacts =!contacts[username]? '<i class="ri-user-add-line" style="font-size:14px;color:var(--text-secondary)"></i>' : '';
+
+    chatItem.innerHTML = `
+      <div class="avatar">${username.charAt(0).toUpperCase()}</div>
+      <div class="chat-info">
+        <h3>${username}${statusIcon} ${notInContacts}</h3>
+        <p id="lastmsg-${username}">Start chatting...</p>
+      </div>
+      <div class="chat-time" id="time-${username}"></div>
+    `;
+
+    chatItem.onclick = () => openChat(username);
+    chatsList.appendChild(chatItem);
+    loadLastMessage(username);
+  });
+}
+
+function loadLastMessage(username) {
+  const chatId = [currentUser, username].sort().join('_');
+  const key = `lastmsg_${username}`;
+  if (listeners[key]) listeners[key]();
+  listeners[key] = onValue(ref(db, `chats/${chatId}`), (snapshot) => {
+    const msgs = snapshot.val();
+    const lastMsgEl = document.getElementById(`lastmsg-${username}`);
+    const timeEl = document.getElementById(`time-${username}`);
+
+    if (msgs && lastMsgEl) {
+      const sorted = Object.values(msgs).sort((a,b) => (b.time || 0) - (a.time || 0));
+      const lastMsg = sorted[0];
+      if (lastMsg.type === 'call') {
+        lastMsgEl.textContent = lastMsg.text;
+      } else if (lastMsg.type === 'voice') {
+        lastMsgEl.textContent = '🎤 Voice message';
+      } else if (lastMsg.type === 'gif') {
+        lastMsgEl.textContent = 'GIF';
+      } else {
+        lastMsgEl.textContent = lastMsg.text;
+      }
+      timeEl.textContent = formatTime(lastMsg.time);
+    }
+  });
+}
+
+window.openChat = async function(username) {
+  const userSnap = await get(ref(db, `users/${username}`));
+  if (!userSnap.exists()) {
+    return showToast('User does not exist');
+  }
+
+  activeChat = username;
+  document.getElementById('emptyChat').style.display = 'none';
+  document.getElementById('activeChat').style.display = 'flex';
+  document.getElementById('chatName').textContent = username;
+  document.getElementById('chatAvatar').textContent = username.charAt(0).toUpperCase();
+
+  updateChatStatus(username);
+  loadMessages(username);
+
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.add('hidden');
+  }
+
+  renderChats();
+}
+
+window.closeChatMobile = function() {
+  document.getElementById('sidebar').classList.remove('hidden');
+  activeChat = null;
+}
+
+function updateChatStatus(username) {
+  const statusEl = document.getElementById('chatStatus');
+  const callBtn = document.getElementById('callBtn');
+
+  if (users[username]?.peerId) {
+    callBtn.style.opacity = '1';
+    callBtn.style.pointerEvents = 'all';
+  } else {
+    callBtn.style.opacity = '0.3';
+    callBtn.style.pointerEvents = 'none';
+  }
+
+  if (users[username]?.online) {
+    statusEl.textContent = 'online';
+    statusEl.style.color = 'var(--bg-green)';
+  } else {
+    statusEl.textContent = 'last seen ' + formatTime(users[username]?.lastSeen);
+    statusEl.style.color = 'var(--text-secondary)';
+  }
+}
+
+function loadMessages(username) {
+  const messagesDiv = document.getElementById('messages');
+  messagesDiv.innerHTML = '<div style="text-align:center;color:var(--text-secondary);margin-top:40px">Loading...</div>';
+
+  const chatId = [currentUser, username].sort().join('_');
+  const key = `msgs_${username}`;
+  if (listeners[key]) listeners[key]();
+
+  listeners[key] = onValue(ref(db, `chats/${chatId}`), (snapshot) => {
+    messagesDiv.innerHTML = '';
+    const msgs = snapshot.val();
+
+    if (!msgs) {
+      messagesDiv.innerHTML = '<div style="text-align:center;color:var(--text-secondary);margin-top:40px">No messages yet. Say hi! 👋</div>';
+      return;
+    }
+
+    Object.values(msgs).sort((a,b) => (a.time || 0) - (b.time || 0)).forEach(msg => {
+      const msgDiv = document.createElement('div');
+
+      if (msg.type === 'call') {
+        msgDiv.className = 'message call-log';
+        const icon = msg.callType === 'missed'? 'ri-phone-missed-line' : msg.callType === 'outgoing'? 'ri-phone-line' : 'ri-phone-line';
+        msgDiv.innerHTML = `<i class="${icon}"></i>${msg.text} • ${formatTime(msg.time)}`;
+} else if (msg.type === 'voice') {
+  const senderInitial = msg.sender.charAt(0).toUpperCase();
+  const bars = Array(30).fill(0).map(() => `<div class="wave-bar"></div>`).join('');
+  msgDiv.className = `message ${msg.sender === currentUser? 'out' : 'in'}`;
+  msgDiv.innerHTML = `
+    <div class="voice-msg" data-duration="${msg.duration}" data-audio="${msg.audioData}">
+      <button onclick="playVoice(this)"><i class="ri-play-fill"></i></button>
+      <div class="progress-wrap" onclick="seekAudio(event, this)">
+        <div class="waveform">${bars}</div>
+      </div>
+      <span class="time-display">${msg.duration}s</span>
+      <div class="avatar-mini">${senderInitial}</div>
+    </div>
+    <div class="msg-time">${formatTime(msg.time)}</div>
+  `;
+}else if (msg.type === 'gif') {
+        msgDiv.className = `message ${msg.sender === currentUser? 'out' : 'in'}`;
+        msgDiv.innerHTML = `
+          <img src="${msg.url}" style="max-width:200px;border-radius:8px">
+          <div class="msg-time">${formatTime(msg.time)}</div>
+        `;
+      } else {
+        msgDiv.className = `message ${msg.sender === currentUser? 'out' : 'in'}`;
+        msgDiv.innerHTML = `
+          ${escapeHtml(msg.text)}
+          <div class="msg-time">${formatTime(msg.time)}</div>
+        `;
+      }
+      messagesDiv.appendChild(msgDiv);
+    });
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+}
+
+window.playVoice = function(btn) {
+  const voiceMsg = btn.closest('.voice-msg');
+  const base64 = voiceMsg.getAttribute('data-audio');
+  const duration = parseInt(voiceMsg.getAttribute('data-duration'));
+  const waveBars = voiceMsg.querySelectorAll('.wave-bar');
+  const timeDisplay = voiceMsg.querySelector('.time-display');
+  const icon = btn.querySelector('i');
+
+  // Stop all other playing audios
+  document.querySelectorAll('.voice-msg').forEach(vm => {
+    if (vm !== voiceMsg) {
+      const otherBtn = vm.querySelector('button i');
+      const otherBars = vm.querySelectorAll('.wave-bar');
+      const otherTime = vm.querySelector('.time-display');
+      const otherDur = parseInt(vm.getAttribute('data-duration'));
+      if (otherBtn) otherBtn.className = 'ri-play-fill';
+      otherBars.forEach(b => b.classList.remove('filled'));
+      if (otherTime) otherTime.textContent = otherDur + 's';
+    }
+  });
+
+  // If same audio is playing, pause/resume
+  if (currentAudio && currentAudio.src === base64) {
+    if (currentAudio.paused) {
+      currentAudio.play();
+      icon.className = 'ri-pause-fill';
+    } else {
+      currentAudio.pause();
+      icon.className = 'ri-play-fill';
+    }
+    return;
+  }
+
+  // Stop previous audio
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+
+  currentAudio = new Audio(base64);
+  icon.className = 'ri-pause-fill';
+  
+  currentAudio.ontimeupdate = () => {
+    const currentTime = currentAudio.currentTime;
+    const remaining = Math.max(0, Math.ceil(duration - currentTime));
+    const progress = currentTime / duration;
+    const barsToFill = Math.floor(progress * waveBars.length);
+    
+    waveBars.forEach((bar, idx) => {
+      if (idx < barsToFill) {
+        bar.classList.add('filled');
+      } else {
+        bar.classList.remove('filled');
+      }
+    });
+    
+    timeDisplay.textContent = remaining + 's';
+  };
+
+  currentAudio.onpause = () => {
+    icon.className = 'ri-play-fill';
+  };
+
+  currentAudio.onplay = () => {
+    icon.className = 'ri-pause-fill';
+  };
+
+  currentAudio.onended = () => {
+    icon.className = 'ri-play-fill';
+    waveBars.forEach(b => b.classList.remove('filled'));
+    timeDisplay.textContent = duration + 's';
+    currentAudio = null;
+  };
+
+  currentAudio.play().catch(err => {
+    console.error('Audio play error:', err);
+    icon.className = 'ri-play-fill';
+    showToast('Audio play failed');
+  });
+}
+
+// NAYA FUNCTION - Seek karne ke liye
+window.seekAudio = function(e, progressWrap) {
+  if (!currentAudio) return;
+  
+  const voiceMsg = progressWrap.closest('.voice-msg');
+  const base64 = voiceMsg.getAttribute('data-audio');
+  
+  // Sirf current playing audio ko seek karo
+  if (!currentAudio || currentAudio.src !== base64) return;
+  
+  const rect = progressWrap.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const width = rect.width;
+  const percent = Math.max(0, Math.min(1, clickX / width));
+  
+  currentAudio.currentTime = percent * currentAudio.duration;
+}
+
+window.sendMessage = function() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text ||!activeChat) return;
+
+  const chatId = [currentUser, activeChat].sort().join('_');
+
+  push(ref(db, `chats/${chatId}`), {
+    sender: currentUser,
+    text: text,
+    type: 'text',
+    time: serverTimestamp()
+  });
+
+  input.value = '';
+  input.focus();
+  input.dispatchEvent(new Event('input'));
+}
+
+window.handleKeyPress = function(e) {
+  if (e.key === 'Enter' &&!e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// FIX 1: Mic Permission Fix - Check element exists + reuse stream
+window.startRecording = async function(e) {
+  if (e) e.preventDefault();
+  if (isRecording) return;
+  if (!activeChat) return showToast('Select a chat first');
+
+  const inputWrapper = document.getElementById('inputWrapper');
+  const recordingUI = document.getElementById('recordingUI');
+  const micBtn = document.getElementById('micBtn');
+  const msgInput = document.getElementById('msgInput');
+
+  if (!inputWrapper || !recordingUI || !micBtn || !msgInput) {
+    console.error('Recording UI elements not found');
+    return showToast('UI Error. Please refresh.');
+  }
+
+  try {
+    if (!localStream || !micPermissionGranted) {
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micPermissionGranted = true;
+    }
+
+    mediaRecorder = new MediaRecorder(localStream);
+    audioChunks = [];
+    isRecording = true;
+    recordStartTime = Date.now();
+
+    msgInput.style.display = 'none';
+    recordingUI.style.display = 'flex';
+    micBtn.classList.add('recording');
+
+    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const duration = Math.round((Date.now() - recordStartTime) / 1000);
+      if (duration > 0.5) sendVoiceMessage(duration);
+    };
+    mediaRecorder.start();
+
+    recordTimer = setInterval(() => {
+      const secs = Math.floor((Date.now() - recordStartTime) / 1000);
+      const mins = Math.floor(secs / 60);
+      const s = secs % 60;
+      const recordTime = document.getElementById('recordTime');
+      if (recordTime) recordTime.textContent = `${mins}:${s.toString().padStart(2, '0')}`;
+    }, 100);
+
+  } catch (err) {
+    console.error('Mic error:', err);
+    if (err.name === 'NotAllowedError') {
+      showToast('Microphone blocked. Please allow in browser settings.');
+    } else if (err.name === 'NotFoundError') {
+      showToast('No microphone found');
+    } else {
+      showToast('Microphone error. Please try again.');
+    }
+  }
+}
+
+window.stopRecording = function(e) {
+  if (e) e.preventDefault();
+  if (!isRecording ||!mediaRecorder) return;
+
+  const slideCancel = e && e.type === 'touchend' && e.changedTouches[0].clientX < window.innerWidth * 0.5;
+
+  isRecording = false;
+  clearInterval(recordTimer);
+
+  const inputWrapper = document.getElementById('inputWrapper');
+  const recordingUI = document.getElementById('recordingUI');
+  const micBtn = document.getElementById('micBtn');
+
+  if (inputWrapper) inputWrapper.querySelector('input').style.display = 'block';
+  if (recordingUI) recordingUI.style.display = 'none';
+  if (micBtn) micBtn.classList.remove('recording');
+
+  if (slideCancel) {
+    mediaRecorder.stop();
+    showToast('Cancelled');
+  } else {
+    mediaRecorder.stop();
+  }
+}
+
+function sendVoiceMessage(duration) {
+  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64 = reader.result;
+    const chatId = [currentUser, activeChat].sort().join('_');
+
+    push(ref(db, `chats/${chatId}`), {
+      sender: currentUser,
+      type: 'voice',
+      audioData: base64,
+      duration: duration,
+      time: serverTimestamp()
+    });
+  };
+  reader.readAsDataURL(audioBlob);
+}
+async function sendCallNotification(calleeUserId, callerName) {
+  const ONESIGNAL_APP_ID = "80a355a4-f29d-46d0-9b9e-82d86f27d508";
+  const REST_API_KEY = "os_v2_app_qcrvljhstvdnbg46qlmg6j6vbd6ujfylvt3ec24i2ze6evphcsh3wivo5jxrpwdko3r4fo5qig3q6r2wwrugr2yeebipnzj666fk3jq";
+
+  await fetch("https://onesignal.com/api/v1/notifications", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Basic " + REST_API_KEY
+    },
+    body: JSON.stringify({
+      app_id: ONESIGNAL_APP_ID,
+      include_external_user_ids: [calleeUserId],
+      headings: { en: "Incoming Call" },
+      contents: { en: callerName + " is calling you..." },
+      android_channel_id: "a7c6d7de-267d-4229-befa-69ff07f51d09",
+      priority: 10,
+      data: { type: "call", callerId: currentUser }
+    })
+  });
+}
+window.startCall = async function() {
+  if (!activeChat) return showToast('Select a chat first');
+
+  const userSnap = await get(ref(db, `users/${activeChat}`));
+  if (!userSnap.exists()) return showToast('User not found');
+
+  const userData = userSnap.val();
+  if (!userData.peerId) {
+    return showToast('User not available. Ask them to refresh.');
+  }
+
+  if (currentCall) {
+    return showToast('Already in a call');
+  }
+
+  try {
+    if (!localStream ||!micPermissionGranted) {
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false
+      });
+      micPermissionGranted = true;
+    }
+
+    const statusText = userData.online? 'Ringing...' : 'Calling...';
+
+    await set(ref(db, `calls/${activeChat}`), {
+      from: currentUser,
+      to: activeChat,
+      status: 'calling',
+      time: serverTimestamp()
+    });
+sendCallNotification(activeChat, currentUser);
+
+    document.getElementById('callModal').classList.add('active');
+    document.getElementById('callName').textContent = activeChat;
+    document.getElementById('callAvatar').textContent = activeChat.charAt(0).toUpperCase();
+    document.getElementById('callStatus').textContent = statusText;
+    document.getElementById('acceptBtn').style.display = 'none';
+    document.getElementById('callBtn').classList.add('calling');
+
+    const call = peer.call(userData.peerId, localStream);
+    currentCall = call;
+
+    call.on('stream', (remoteStream) => {
+      document.getElementById('remoteAudio').srcObject = remoteStream;
+      document.getElementById('callStatus').textContent = '00:00';
+      update(ref(db, `calls/${activeChat}`), { status: 'connected' });
+      startCallTimer();
+      logCallToChat('outgoing', activeChat);
+    });
+
+    call.on('close', () => {
+      endCallCleanup();
+    });
+
+    call.on('error', (err) => {
+      console.error('Call error:', err);
+      endCallCleanup();
+      showToast('Call failed: ' + err.type);
+    });
+
+    setTimeout(() => {
+      if (document.getElementById('callStatus').textContent === 'Ringing...' || document.getElementById('callStatus').textContent === 'Calling...') {
+        endCallCleanup();
+        showToast('No answer');
+        logCallToChat('missed', activeChat);
+      }
+    }, 30000);
+
+  } catch (err) {
+    console.error('Mic error:', err);
+    if (err.name === 'NotAllowedError') {
+      showToast('Microphone blocked. Allow in browser settings.');
+    } else if (err.name === 'NotFoundError') {
+      showToast('No microphone found');
+    } else {
+      showToast('Microphone error: ' + err.message);
+    }
+    endCallCleanup();
+  }
+}
+
+function showIncomingCall(fromUser) {
+  if (currentCall || document.getElementById('callModal').classList.contains('active')) return;
+
+  document.getElementById('callModal').classList.add('active');
+  document.getElementById('callName').textContent = fromUser;
+  document.getElementById('callAvatar').textContent = fromUser.charAt(0).toUpperCase();
+  document.getElementById('callStatus').textContent = 'Incoming call...';
+  document.getElementById('acceptBtn').style.display = 'flex';
+  document.getElementById('ringtone').play().catch(e => console.log('Ringtone error:', e));
+
+  window.pendingCallFrom = fromUser;
+}
+
+// FIX 2: Manual Accept Only - NO AUTO ANSWER
+window.acceptCall = async function() {
+  try {
+    if (!localStream ||!micPermissionGranted) {
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false
+      });
+      micPermissionGranted = true;
+    }
+
+    document.getElementById('ringtone').pause();
+    document.getElementById('acceptBtn').style.display = 'none';
+    document.getElementById('callStatus').textContent = 'Connecting...';
+
+    if (currentCall) {
+      currentCall.answer(localStream);
+      handleCallStream(currentCall);
+      logCallToChat('incoming', window.pendingCallFrom);
+    }
+
+    update(ref(db, `calls/${currentUser}`), { status: 'connected' });
+
+  } catch (err) {
+    console.error('Mic error:', err);
+    showToast('Microphone access denied');
+    endCallCleanup();
+  }
+}
+
+function handleCallStream(call) {
+  call.on('stream', (remoteStream) => {
+    document.getElementById('remoteAudio').srcObject = remoteStream;
+    document.getElementById('callStatus').textContent = '00:00';
+    startCallTimer();
+  });
+
+  call.on('close', () => {
+    endCallCleanup();
+  });
+
+  call.on('error', (err) => {
+    console.error('Call error:', err);
+    endCallCleanup();
+  });
+}
+
+function startCallTimer() {
+  callSeconds = 0;
+  if (callTimer) clearInterval(callTimer);
+  callTimer = setInterval(() => {
+    callSeconds++;
+    const mins = Math.floor(callSeconds / 60).toString().padStart(2, '0');
+    const secs = (callSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('callStatus').textContent = `${mins}:${secs}`;
+  }, 1000);
+}
+
+function stopCallTimer() {
+  if (callTimer) {
+    clearInterval(callTimer);
+    callTimer = null;
+    callSeconds = 0;
+  }
+}
+
+function logCallToChat(type, username) {
+  const chatId = [currentUser, username].sort().join('_');
+  let text = '';
+  if (type === 'outgoing') text = 'Outgoing call';
+  else if (type === 'incoming') text = 'Incoming call';
+  else if (type === 'missed') text = 'Missed call';
+
+  push(ref(db, `chats/${chatId}`), {
+    sender: 'system',
+    type: 'call',
+    callType: type,
+    text: text,
+    time: serverTimestamp()
+  });
+}
+
+window.endCall = function() {
+  remove(ref(db, `calls/${currentUser}`));
+  if (activeChat) remove(ref(db, `calls/${activeChat}`));
+  if (window.pendingCallFrom) remove(ref(db, `calls/${window.pendingCallFrom}`));
+  endCallCleanup();
+}
+
+function endCallCleanup() {
+  stopCallTimer();
+  endCallUI();
+
+  if (currentCall) {
+    currentCall.close();
+    currentCall = null;
+  }
+
+  window.pendingCallFrom = null;
+
+  if (currentUser) {
+    update(ref(db, `users/${currentUser}`), {
+      online: true,
+      lastSeen: serverTimestamp()
+    });
+  }
+}
+
+function endCallUI() {
+  document.getElementById('ringtone').pause();
+  document.getElementById('callModal').classList.remove('active');
+  document.getElementById('callBtn').classList.remove('calling');
+  document.getElementById('remoteAudio').srcObject = null;
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now - date;
+
+  if (diff < 60000) return 'now';
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
+  if (diff < 86400000) return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  document.querySelectorAll('.chat-item').forEach(item => {
+    const name = item.querySelector('h3').textContent.toLowerCase();
+    item.style.display = name.includes(query)? 'flex' : 'none';
+  });
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.emoji-picker') &&!e.target.closest('.ri-emotion-happy-line')) {
+    document.getElementById('emojiPicker').classList.remove('active');
+  }
+});
+
+window.addEventListener('beforeunload', () => {
+  if (localStream) localStream.getTracks().forEach(t => t.stop());
+  if (peer) peer.destroy();
+});
+</script>
+
+</body>
+</html>
